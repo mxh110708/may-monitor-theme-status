@@ -13,10 +13,11 @@ import { DataTooltip } from '@/components/ui/data-tooltip'
 import { Empty } from '@/components/ui/empty'
 import { useAppStore } from '@/stores/app'
 import { useNodesStore } from '@/stores/nodes'
-import { getCompatibleLoadRecords } from '@/utils/compat'
 import * as financeHelper from '@/utils/financeHelper'
 import { formatBytesPerSecondWithConfig, formatBytesWithConfig, formatUptimeWithFormat } from '@/utils/helper'
 import { lookupIpGeo } from '@/utils/ipGeoHelper'
+import { getMonitorLoadRecords } from '@/utils/monitorData'
+import { nodeStatusLabel } from '@/utils/nodeMetricsHelper'
 import { getOSImage, getOSName } from '@/utils/osImageHelper'
 import { resolveProviderInfo } from '@/utils/providerInfo'
 import { getRegionCode, getRegionDisplayName } from '@/utils/regionHelper'
@@ -152,7 +153,7 @@ async function resolveProvider(node: NodeData): Promise<void> {
 
 async function loadTrafficPeakRecords(uuid: string): Promise<Array<{ net_in?: number, net_out?: number }>> {
   try {
-    const { records } = await getCompatibleLoadRecords(uuid, 24)
+    const { records } = await getMonitorLoadRecords(uuid, 24)
     return records
   }
   catch {
@@ -451,7 +452,7 @@ const trafficProgressClass = computed(() => {
           <span>{{ data.name }}</span>
         </div>
         <Badge :variant="data.online ? 'default' : 'destructive'" class="text-xs !rounded">
-          {{ data.online ? '在线' : '离线' }}
+          {{ nodeStatusLabel(data, appStore.lang) }}
         </Badge>
         <!-- 节点自定义标签 -->
         <div v-if="customTags.length" class="flex flex-wrap gap-1">

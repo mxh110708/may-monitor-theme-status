@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-May Status is a Vue 3/Vite theme for Komari, not a standalone administration app. Application code is in `src/`; read `src/AGENTS.md` before editing it. Components use reka-ui and Tailwind CSS v4. Static resources are in `public/`, including flags, logos, and network-only PWA overrides. `komari-theme.json` defines theme identity and managed settings; `docs/preview.png` is a required packaging input. Maintenance scripts live in `scripts/`.
+May Status is a Vue 3/Vite theme for May Monitor, not a standalone administration app. Application code is in `src/`; read `src/AGENTS.md` before editing it. Components use reka-ui and Tailwind CSS v4. Static resources are in `public/`, including flags, logos, and network-only PWA overrides. `komari-theme.json` defines theme identity and managed settings; `docs/preview.png` is a required packaging input. Maintenance scripts live in `scripts/`.
 
 ## Build, Test, and Development Commands
 
@@ -17,7 +17,7 @@ bun run check:package
 bun run test:package
 ```
 
-`dev` starts Vite. `lint` fixes files and writes its cache; review the resulting diff. `build` runs Vue/TypeScript checking, builds `dist/`, checks PWA resources, and creates `komari-theme-may-status-build-<sha>.zip`. `check:package` rechecks packaging inputs and built resources; it is not a full application test suite. Use `bun run preview` for production preview.
+`dev` starts Vite. `lint` fixes files and writes its cache; review the resulting diff. `build` runs Vue/TypeScript checking, builds `dist/`, checks PWA resources, and creates `may-monitor-theme-status-build-<sha>.zip`. `check:package` rechecks packaging inputs and built resources; it is not a full application test suite. Use `bun run preview` for production preview.
 
 ## Coding Style & Naming Conventions
 
@@ -29,4 +29,4 @@ There is no general application test framework or coverage threshold. Node's bui
 
 ## Commit, Pull Request & Security Guidelines
 
-History uses concise `feat:`, `fix:`, and `refine:` subjects. Keep commits focused. PRs should describe behavior, compatibility, verification, and include screenshots for UI changes. Preserve `short=GlassmorphismEnhanced` and saved settings. Never commit credentials, databases, private VPS archives, or tokens. Production installation and browser/cache operations require explicit authorization.
+History uses concise `feat:`, `fix:`, and `refine:` subjects. Keep commits focused. PRs should describe behavior, compatibility, verification, and include screenshots for UI changes. Preserve `short=GlassmorphismEnhanced` and saved settings. Never commit credentials, databases, private VPS archives, or tokens. Production installation and browser/cache operations require explicit authorization. Preserve the operator-pinned static-theme profile; do not enable general extensions to load this theme.

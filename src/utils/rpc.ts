@@ -523,13 +523,13 @@ export class RpcClient {
   }
 }
 
-// ==================== KomariRpc 类 ====================
+// ==================== MayMonitorRpc 类 ====================
 
 /**
  * Komari RPC 高级封装
  * 提供常用的 Komari API 方法
  */
-export class KomariRpc {
+export class MayMonitorRpc {
   private client: RpcClient
 
   constructor(options: RpcClientOptions = {}) {
@@ -661,14 +661,14 @@ export class KomariRpc {
 
 // ==================== 单例 ====================
 
-let sharedRpc: KomariRpc | null = null
+let sharedRpc: MayMonitorRpc | null = null
 
 /**
- * 获取共享的 KomariRpc 实例
+ * 获取共享的 MayMonitorRpc 实例
  */
-export function getSharedRpc(): KomariRpc {
+export function getSharedRpc(): MayMonitorRpc {
   if (!sharedRpc) {
-    sharedRpc = new KomariRpc()
+    sharedRpc = new MayMonitorRpc()
   }
   return sharedRpc
 }

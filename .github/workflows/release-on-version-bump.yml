@@ -139,4 +139,4 @@ jobs:
           overwrite_files: false
           fail_on_unmatched_files: true
           files: |
-            komari-theme-may-status-build*.zip
+            may-monitor-theme-status-build*.zip

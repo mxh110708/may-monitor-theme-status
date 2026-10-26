@@ -12,9 +12,9 @@ import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAppStore } from '@/stores/app'
 import { useNodesStore } from '@/stores/nodes'
-import { getCompatibleLoadRecords } from '@/utils/compat'
 import { formatBytes, formatBytesSplit } from '@/utils/helper'
 import { getSystemLoadAxisMaximum } from '@/utils/loadChartHelper'
+import { getMonitorLoadRecords } from '@/utils/monitorData'
 import { fillMissingTimePoints } from '@/utils/recordHelper'
 import { getSharedRpc } from '@/utils/rpc'
 import '@/utils/echarts' // 共享 ECharts 配置
@@ -217,7 +217,7 @@ async function fetchHistoryData() {
   error.value = null
 
   try {
-    const { records } = await getCompatibleLoadRecords(props.uuid, hours)
+    const { records } = await getMonitorLoadRecords(props.uuid, hours)
 
     // 按时间排序
     records.sort((a: StatusRecord, b: StatusRecord) =>

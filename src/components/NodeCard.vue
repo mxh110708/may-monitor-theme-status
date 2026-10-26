@@ -9,7 +9,7 @@ import { ProgressThin } from '@/components/ui/progress-thin'
 import { useNodePingDisplay } from '@/composables/useNodePingDisplay'
 import { useAppStore } from '@/stores/app'
 import { formatBytesPerSecondWithConfig, formatBytesWithConfig, formatDateTime, getStatus, getUptimeDays } from '@/utils/helper'
-import { getDiskPercentage, getMemoryPercentage, getTrafficUsed, getTrafficUsedPercentage, hasTrafficLimit } from '@/utils/nodeMetricsHelper'
+import { getDiskPercentage, getMemoryPercentage, getTrafficUsed, getTrafficUsedPercentage, hasTrafficLimit, nodeStatusLabel } from '@/utils/nodeMetricsHelper'
 import { getOSImage, getOSName } from '@/utils/osImageHelper'
 import { getRegionCode, getRegionDisplayName } from '@/utils/regionHelper'
 import { formatCurrencyValue, formatPriceWithCycle, getDaysUntilExpired, getExpireStatus, getRemainingValue, parseTags } from '@/utils/tagHelper'
@@ -221,7 +221,7 @@ function hasRegion(region: string | null | undefined): boolean {
         </div>
 
         <!-- 四项进度条 -->
-        <div class="grid grid-cols-2 gap-x-4 gap-y-2.5">
+        <div v-if="props.node.time" class="grid grid-cols-2 gap-x-4 gap-y-2.5">
           <!-- CPU -->
           <div class="flex flex-col gap-1">
             <div class="flex justify-between text-xs">
@@ -280,7 +280,7 @@ function hasRegion(region: string | null | undefined): boolean {
         </div>
 
         <!-- 三列：网速 / 总流量 / 剩余天数+价格或负载 -->
-        <div class="grid gap-1.5" :class="nodeCardMetricGridClass">
+        <div v-if="props.node.time" class="grid gap-1.5" :class="nodeCardMetricGridClass">
           <!-- 实时网速 -->
           <div class="flex flex-col gap-0.5 rounded-lg bg-slate-500/5 min-w-0 overflow-hidden" :class="nodeCardMetricBoxClass">
             <div class="text-[11px] text-green-600 flex items-center gap-1">
@@ -447,7 +447,7 @@ function hasRegion(region: string | null | undefined): boolean {
           class="absolute inset-0 flex flex-col items-center justify-center z-10 rounded-xl bg-white/20 dark:bg-black/20 backdrop-blur-[2px]"
         >
           <div class="text-sm font-semibold text-destructive">
-            离线
+            {{ nodeStatusLabel(props.node, appStore.lang) }}
           </div>
           <div class="text-[11px] text-muted-foreground mt-1">
             {{ offlineTime }}

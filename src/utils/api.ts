@@ -208,7 +208,7 @@ export class ApiError extends Error {
 // ==================== API 客户端 ====================
 
 /** Komari API 客户端 */
-export class KomariApi {
+export class MayMonitorApi {
   private baseUrl: string
   private timeout: number
 
@@ -538,14 +538,14 @@ export class RealtimeWebSocket {
 
 // ==================== 单例实例 ====================
 
-let sharedApiInstance: KomariApi | null = null
+let sharedApiInstance: MayMonitorApi | null = null
 
 /**
- * 获取共享的 KomariApi 实例
+ * 获取共享的 MayMonitorApi 实例
  */
-export function getSharedApi(options?: ApiClientOptions): KomariApi {
+export function getSharedApi(options?: ApiClientOptions): MayMonitorApi {
   if (!sharedApiInstance) {
-    sharedApiInstance = new KomariApi(options)
+    sharedApiInstance = new MayMonitorApi(options)
   }
   return sharedApiInstance
 }
@@ -558,4 +558,4 @@ export function resetSharedApi(): void {
 }
 
 // 默认导出
-export default KomariApi
+export default MayMonitorApi

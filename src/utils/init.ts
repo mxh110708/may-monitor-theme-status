@@ -3,11 +3,11 @@
  * 负责应用启动时的初始化流程和 WebSocket 连接管理
  */
 
-import type { KomariRpc } from '@/utils/rpc'
+import type { MayMonitorRpc } from '@/utils/rpc'
 import { useAppStore } from '@/stores/app'
 import { useNodesStore } from '@/stores/nodes'
 import { getSharedApi } from '@/utils/api'
-import { checkKomariHealth, getCompatibleNodesSnapshot } from '@/utils/compat'
+import { checkMonitorHealth, getMonitorNodesSnapshot } from '@/utils/monitorData'
 import { getSharedRpc } from '@/utils/rpc'
 
 /** 初始化配置 */
@@ -34,7 +34,7 @@ const CLIENTS_REFRESH_INTERVAL_MS = 60_000
 /** 初始化状态管理 */
 class InitManager {
   private config: Required<InitConfig>
-  private rpc: KomariRpc
+  private rpc: MayMonitorRpc
   private appStore: ReturnType<typeof useAppStore>
   private nodesStore: ReturnType<typeof useNodesStore>
   private pollTimer: ReturnType<typeof setTimeout> | null = null
@@ -42,6 +42,20 @@ class InitManager {
   private lastClientsFetchedAt = 0
   private isInitialized = false
   private useWebSocket: boolean | null = null // 根据主题配置决定
+  private destroyed = false
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null
+  private visibilityHandler = () => {
+    if (document.hidden) {
+      this.stopPolling()
+      if (this.reconnectTimer)
+        clearTimeout(this.reconnectTimer)
+      this.rpc.close()
+    }
+    else if (!this.destroyed) {
+      void this.poll().finally(() => this.startPolling())
+    }
+  }
+
   constructor(config: InitConfig = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config }
     this.rpc = getSharedRpc()
@@ -61,6 +75,7 @@ class InitManager {
    * 执行初始化流程
    */
   async init(): Promise<void> {
+    this.destroyed = false
     if (this.isInitialized) {
       console.warn('[InitManager] Already initialized')
       return
@@ -84,6 +99,7 @@ class InitManager {
 
       // 6. 建立 WebSocket 连接并开始轮询
       this.startWebSocketAndPolling()
+      document.addEventListener('visibilitychange', this.visibilityHandler)
 
       this.isInitialized = true
     }
@@ -91,6 +107,8 @@ class InitManager {
       console.error('[InitManager] Initialization failed:', error)
       // 即使失败也解除加载状态，显示错误页面
       this.appStore.loading = false
+      this.appStore.connectionError = true
+      this.nodesStore.markUnavailable()
       throw error
     }
   }
@@ -100,7 +118,7 @@ class InitManager {
    */
   private async healthCheck(): Promise<void> {
     try {
-      await checkKomariHealth(this.config.healthCheckTimeout)
+      await checkMonitorHealth(this.config.healthCheckTimeout)
     }
     catch (error) {
       console.error('[InitManager] Health check failed:', error)
@@ -146,7 +164,7 @@ class InitManager {
   private async fetchNodesData(): Promise<void> {
     try {
       const { clients: clientsResult, statuses: statusesResult }
-        = await getCompatibleNodesSnapshot()
+        = await getMonitorNodesSnapshot()
 
       // 初始化节点数据
       this.nodesStore.initNodes(clientsResult, statusesResult)
@@ -185,6 +203,8 @@ class InitManager {
    * 建立 WebSocket 连接
    */
   private async connectWebSocket(): Promise<void> {
+    if (this.destroyed || document.hidden)
+      return
     // 如果已回落到 POST 模式或配置为 HTTP 模式，不再尝试 WebSocket
     if (this.useWebSocket === false) {
       return
@@ -199,6 +219,10 @@ class InitManager {
     try {
       // 使用 ping 验证连接，10 秒超时
       await client.ensureWebSocketConnectedWithPing(10000)
+      if (this.destroyed || document.hidden) {
+        client.close()
+        return
+      }
       this.nodesStore.updateWsState('connected', 0)
 
       // 连接成功，重置错误状态
@@ -242,6 +266,8 @@ class InitManager {
    * 安排重连
    */
   private scheduleReconnect(): void {
+    if (this.destroyed || document.hidden)
+      return
     const attempts = this.nodesStore.wsReconnectAttempts
 
     // 达到最大重连次数，回落到 POST 模式
@@ -258,7 +284,7 @@ class InitManager {
 
     this.nodesStore.updateWsState('reconnecting', attempts + 1)
 
-    setTimeout(async () => {
+    this.reconnectTimer = setTimeout(async () => {
       try {
         const client = this.rpc.getClient()
         client.close()
@@ -291,14 +317,17 @@ class InitManager {
    * 开始轮询
    */
   private startPolling(): void {
+    if (this.destroyed || document.hidden)
+      return
     if (this.pollTimer) {
       clearTimeout(this.pollTimer)
     }
 
     const schedulePoll = () => {
-      this.pollTimer = setTimeout(() => {
-        void this.poll()
-        schedulePoll()
+      this.pollTimer = setTimeout(async () => {
+        await this.poll()
+        if (!this.destroyed && !document.hidden)
+          schedulePoll()
       }, this.getPollInterval())
     }
 
@@ -309,7 +338,7 @@ class InitManager {
    * 执行轮询任务
    */
   private async poll(): Promise<void> {
-    if (this.isPolling) {
+    if (this.isPolling || this.destroyed || document.hidden) {
       return
     }
 
@@ -319,9 +348,11 @@ class InitManager {
       const now = Date.now()
       const shouldRefreshClients = now - this.lastClientsFetchedAt >= CLIENTS_REFRESH_INTERVAL_MS
 
-      const snapshot = await getCompatibleNodesSnapshot()
-      const statusesResult = snapshot.statuses
-      const clientsResult = shouldRefreshClients ? snapshot.clients : null
+      const snapshot = shouldRefreshClients ? await getMonitorNodesSnapshot() : null
+      const statusesResult = snapshot?.statuses ?? await this.rpc.getNodesLatestStatus()
+      const clientsResult = snapshot?.clients ?? null
+      if (this.destroyed)
+        return
 
       if (clientsResult) {
         this.nodesStore.updateNodeClients(clientsResult)
@@ -338,6 +369,7 @@ class InitManager {
 
       // 一次失败就显示错误
       this.appStore.connectionError = true
+      this.nodesStore.markUnavailable()
     }
     finally {
       this.isPolling = false
@@ -358,6 +390,10 @@ class InitManager {
    * 销毁管理器
    */
   destroy(): void {
+    this.destroyed = true
+    document.removeEventListener('visibilitychange', this.visibilityHandler)
+    if (this.reconnectTimer)
+      clearTimeout(this.reconnectTimer)
     this.stopPolling()
     this.rpc.close()
     this.nodesStore.clearNodes()

@@ -243,8 +243,8 @@ const nodeCardGridClass = computed(() => {
   <div class="home-view">
     <div v-if="appStore.connectionError" class="alert px-4">
       <Alert variant="destructive" class="border-none backdrop-blur-xs bg-red-400/10 rounded-md">
-        <AlertTitle>RPC 服务错误</AlertTitle>
-        <AlertDescription>连接服务器失败，请检查网络设置或刷新页面后再试。</AlertDescription>
+        <AlertTitle>{{ appStore.publicSettings?.private_site && !appStore.isLoggedIn ? '需要登录' : '监控服务暂不可达' }}</AlertTitle>
+        <AlertDescription>{{ appStore.publicSettings?.private_site && !appStore.isLoggedIn ? '本站仅向已登录用户显示监控数据，请进入后台登录。' : '读取监控状态失败，最近的数据不代表当前在线状态。请检查网络或稍后重试。' }}</AlertDescription>
       </Alert>
     </div>
 

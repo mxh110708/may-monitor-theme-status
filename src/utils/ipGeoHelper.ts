@@ -17,7 +17,7 @@ export interface IpGeo {
   asn?: string
 }
 
-const CACHE_PREFIX = 'komari-theme-emerald:ipgeo'
+const CACHE_PREFIX = 'may-monitor-theme-status:ipgeo'
 const CACHE_VERSION = 2
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000 // 30 天
 const IP_GEO_TIMEOUT_MS = 5000

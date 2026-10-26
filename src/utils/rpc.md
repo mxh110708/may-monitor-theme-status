@@ -5,7 +5,7 @@
 ## 安装与引入
 
 ```typescript
-import { getSharedRpc, KomariRpc, RpcError } from '@/utils/rpc'
+import { getSharedRpc, MayMonitorRpc, RpcError } from '@/utils/rpc'
 ```
 
 ## 快速开始
@@ -29,7 +29,7 @@ const pong = await rpc.ping() // 'pong'
 ### 创建独立实例
 
 ```typescript
-const rpc = new KomariRpc({
+const rpc = new MayMonitorRpc({
   baseUrl: '/api/rpc2', // 基础路径
   timeout: 30000, // 超时时间（毫秒）
   useWebSocket: false, // 是否使用 WebSocket
@@ -318,7 +318,7 @@ catch (error) {
 WebSocket 模式适用于需要频繁调用的场景，可以减少连接开销：
 
 ```typescript
-const rpc = new KomariRpc({ useWebSocket: true })
+const rpc = new MayMonitorRpc({ useWebSocket: true })
 
 // 或者动态切换
 rpc.getClient().setTransport(true)

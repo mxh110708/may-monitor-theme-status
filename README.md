@@ -1,18 +1,18 @@
 # May Status
 
-面向中文监控场景的 Komari 主题，由 [mxh110708](https://github.com/mxh110708) 维护。
+面向 May Monitor 的公开监控主题，由 [mxh110708](https://github.com/mxh110708) 维护。
 
 May Status 延续毛玻璃界面，在此基础上完善中文文案、后台外观设置、历史数据兼容性与网络质量展示。重点是清晰呈现真实监控数据，而不是改变检测结果或掩盖线路问题。
 
 ## 主要功能
 
 - **中文界面**：普通标签、选项和说明使用规范中文；保留 HTTP、WebSocket、IPv4、IPv6 等技术名称。
-- **统一外观设置**：在 Komari 后台的「May Status 外观」入口配置主题模式、数据刷新、首页模块、节点卡片和背景。
+- **统一外观设置**：在 May Monitor 后台的「May Status 外观」入口配置主题模式、数据刷新、首页模块、节点卡片和背景。
 - **可配置总览**：选择总览指标、排列顺序和快捷筛选项，支持卡片与列表视图及自定义节点顺序。
 - **真实网络历史**：按运营商与 IP 协议展示延迟和探测失败比例；缺少记录时显示无数据，不补造样本。
 - **地理距离评级**：同地区、同检测目标使用同一公式，不因某台服务器长期绕路而放宽标准。
-- **历史数据兼容**：优先使用 Komari RPC2，兼容节点数组、节点映射及分组历史记录；必要时回退 REST 接口。
-- **图标与背景**：支持 Komari 本地上传的站点图标，以及可选的外部图标、图片或视频背景。
+- **历史数据兼容**：按 May Monitor RPC2 合同读取节点及分组历史；网络与鉴权失败明确呈现，不再回退旧版接口。
+- **图标与背景**：支持 May Monitor 本地上传的站点图标，以及可选的外部图标、图片或视频背景。
 - **节点详情**：查看负载、内存、流量和检测历史，支持「延迟／丢包」图表切换；保留 7 天检测图表选项，实际数据范围由主控保留策略决定。
 - **CPU 与负载分轴**：CPU 使用率固定按左轴 0–100% 展示，系统负载按右轴展示并以逻辑核心数作为刻度基线；颜色、图例和提示均注明对应轴，避免把负载误读为百分比。
 - **地球与地图**：支持立体地球、点阵地球和平面地图，可独立调整相关显示选项。
@@ -37,16 +37,11 @@ May Status 延续毛玻璃界面，在此基础上完善中文文案、后台外
 
 ## 安装与更新
 
-1. 从本仓库的 [Releases](https://github.com/mxh110708/komari-theme-may-status/releases) 下载 `komari-theme-may-status-build-*.zip`。
-2. 登录 Komari 后台，进入「主题 → 主题管理」。
-3. 首次安装时上传主题并设为当前主题；更新已有主题时使用更新入口上传新包。
-4. 打开「May Status 外观」检查设置，刷新前台页面。
+本轮采用已审查静态主题接入，配套功能首次加入 Server `0.1.0-rc.6` 候选。发布状态、暂存、应用、外观设置及恢复步骤见 [May Monitor 适配说明](docs/MAY-MONITOR-2026-10-26.zh-CN.md)。不会为了主题开启通用插件、脚本或 Web 归档导入。
 
-不要解压后重新打包，也不要将整个源码压缩包作为主题上传。发布包包含主题清单、预览图和构建后的前端文件。
+从 [Releases](https://github.com/mxh110708/may-monitor-theme-status/releases) 取得对应发行包和摘要，先核对版本与配套服务端；未公开的候选包不应通过不存在的下载地址获取。主题包名为 `may-monitor-theme-status-build-*.zip`。
 
-原毛玻璃增强版的内部标识 `GlassmorphismEnhanced` 保持不变，以便沿用已保存的外观设置。项目名称、主题展示名称和发布包名称已改为 May Status。
-
-仓库提供的 [维护安装脚本](./scripts/install-may-theme-update.sh) 适用于既有的 systemd 主控部署：校验包摘要、创建服务器本地备份、保留原设置，并为内置后台顶部标题添加兼容适配。它依赖特定部署路径，执行前应检查环境；不适用于直接复制到任意 Docker 部署中运行。
+主题清单文件格式及 `GlassmorphismEnhanced` 设置身份保持稳定；账号与上游版权保留。源码目录为 `F:\Pywork\May-Monitor-Theme-Status`。
 
 ## 使用注意
 
@@ -59,9 +54,9 @@ May Status 延续毛玻璃界面，在此基础上完善中文文案、后台外
 
 ## 兼容性
 
-当前维护版本已在 Komari `1.5.0-fix1` 上验证。历史版本的 RPC2／REST 兼容代码继续保留，但不代表所有旧版或未来版本均经过完整验证。
+当前适配以 May Monitor 的节点、实时上报、负载历史、探测和分时丢包合同为准，后台管理继续使用 May 内置界面。主题与服务端版本独立，旧 Komari 发行不在本轮新增支持范围。
 
-缺少权限、接口能力或历史记录时，界面显示对应的无数据状态，不伪造正常结果。Komari 客户端版本与主题版本独立管理。
+等待首次上报、离线、过期、数据未知和监控不可达分别展示；不制造零负载或正常在线。页面隐藏后暂停实时轮询，重新显示时获取当前状态。
 
 ## 本地开发
 
@@ -81,7 +76,7 @@ bun run check:package
 bun run test:package
 ```
 
-构建输出为 `dist/` 和 `komari-theme-may-status-build-<commit>.zip`。生产预览可使用 `bun run preview`。
+构建输出为 `dist/` 和 `may-monitor-theme-status-build-<commit>.zip`。生产预览可使用 `bun run preview`。
 
 构建必须包含 `public/registerSW.js` 与 `public/sw.js` 的原始字节：它们停止旧 PWA 导航兜底把 `/admin` 错误导向公开主题，Worker 不拦截网络请求。更新既有浏览器 Worker 取决于浏览器更新周期；本项目不强制刷新或清理用户缓存。`check:package` 检查版本、主题身份、必需资源和网络模式行为，不代表完整浏览器验收。
 
@@ -93,7 +88,7 @@ bun run test:package
 
 ## 反馈与安全
 
-通过本仓库的 [Issues](https://github.com/mxh110708/komari-theme-may-status/issues) 提交问题。请说明主控与主题版本、浏览器、复现步骤，以及经过脱敏的截图。
+通过本仓库的 [Issues](https://github.com/mxh110708/may-monitor-theme-status/issues) 提交问题。请说明主控与主题版本、浏览器、复现步骤，以及经过脱敏的截图。
 
 不要提交节点 Token、管理员密码、私钥、数据库、备份、Cloudflare Tunnel Token 或完整私有配置。公开示例不应包含真实节点地址或标识。
 

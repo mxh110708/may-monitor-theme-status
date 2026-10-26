@@ -45,3 +45,5 @@ __screenshots__/
 
 # Theme build output
 komari-theme-*.zip
+may-monitor-theme-status-build-*.zip
+__pycache__/

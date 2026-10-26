@@ -43,6 +43,7 @@ export interface NodeData {
   updated_at: string
   // Status 信息
   online: boolean
+  dataState: 'waiting' | 'online' | 'offline' | 'stale' | 'unknown'
   time: string
   cpu: number
   gpu: number
@@ -161,6 +162,7 @@ const useNodesStore = defineStore('nodes', () => {
       updated_at: client.updated_at,
       // Status 默认值
       online: false,
+      dataState: 'waiting',
       time: '',
       cpu: 0,
       gpu: 0,
@@ -191,8 +193,18 @@ const useNodesStore = defineStore('nodes', () => {
    * 只会重算真正变化的字段所对应的视图；未变化的字段连依赖都不会触发。
    */
   function applyStatus(node: NodeData, status: StatusData): void {
-    if (node.online !== status.online)
-      node.online = status.online
+    const stamp = new Date(status.time).getTime()
+    const valid = Number.isFinite(stamp) && stamp > 0 && stamp <= Date.now() + 5000
+      && Number.isFinite(status.cpu) && status.cpu >= 0 && status.cpu <= 100
+      && Number.isFinite(status.ram) && status.ram >= 0 && node.mem_total > 0
+    node.dataState = !status.time
+      ? 'waiting'
+      : !valid
+          ? 'unknown'
+          : !status.online ? 'offline' : Date.now() - stamp > 90_000 ? 'stale' : 'online'
+    node.online = node.dataState === 'online'
+    if (!valid)
+      return
     if (node.time !== status.time)
       node.time = status.time
     if (node.cpu !== status.cpu)
@@ -361,6 +373,19 @@ const useNodesStore = defineStore('nodes', () => {
       if (node && status)
         applyStatus(node, status)
     }
+    for (const node of nodes.value) {
+      if (!statuses[node.uuid]) {
+        node.online = false
+        node.dataState = node.time ? 'offline' : 'waiting'
+      }
+    }
+  }
+
+  function markUnavailable(): void {
+    for (const node of nodes.value) {
+      node.online = false
+      node.dataState = 'unknown'
+    }
   }
 
   /**
@@ -438,6 +463,7 @@ const useNodesStore = defineStore('nodes', () => {
     sortNodesByWeight,
     updateWsState,
     clearNodes,
+    markUnavailable,
   }
 })
 

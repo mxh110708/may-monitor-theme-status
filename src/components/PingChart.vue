@@ -10,8 +10,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useAppStore } from '@/stores/app'
-import { getCompatiblePingLossMetrics, getCompatiblePingRecords } from '@/utils/compat'
 import { isValidLatencySample } from '@/utils/latencyRating'
+import { getMonitorPingLossMetrics, getMonitorPingRecords } from '@/utils/monitorData'
 import { buildPingLossWindows, buildPingMetricLossWindows, getPingLossWindowMs, getPingMetricLossWindowMs } from '@/utils/pingChartHelper'
 import { cutPeakValues, interpolateNullsLinear } from '@/utils/recordHelper'
 import '@/utils/echarts' // 共享 ECharts 配置
@@ -189,8 +189,8 @@ async function fetchRecords() {
 
   try {
     const [result, metrics] = await Promise.all([
-      getCompatiblePingRecords(props.uuid, hours),
-      getCompatiblePingLossMetrics(props.uuid, hours, until),
+      getMonitorPingRecords(props.uuid, hours),
+      getMonitorPingLossMetrics(props.uuid, hours, until),
     ])
     if (version !== recordFetchVersion)
       return

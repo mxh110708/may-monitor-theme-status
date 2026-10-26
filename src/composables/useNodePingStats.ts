@@ -1,7 +1,7 @@
 import type { MaybeRefOrGetter } from 'vue'
 import { useThrottleFn } from '@vueuse/core'
 import { computed, onScopeDispose, ref, shallowRef, toValue, watch } from 'vue'
-import { getCompatiblePingRecords } from '@/utils/compat'
+import { getMonitorPingRecords } from '@/utils/monitorData'
 
 export interface NodePingHistoryPoint {
   time: string
@@ -48,7 +48,7 @@ interface SharedPingRecordsEntry {
 
 const HISTORY_BUCKET_COUNT = 20
 const CACHE_VERSION = 5
-const CACHE_KEY_PREFIX = 'komari-theme-emerald:node-ping-stats'
+const CACHE_KEY_PREFIX = 'may-monitor-theme-status:node-ping-stats'
 const FULL_LOSS_EPSILON = 1e-6
 const PING_RECORD_REFRESH_INTERVAL_MS = 60_000
 const sharedPingRecordsCache = new Map<number, SharedPingRecordsEntry>()
@@ -223,7 +223,7 @@ async function loadSharedPingRecords(entry: SharedPingRecordsEntry, hours: numbe
 
   entry.promise = (async () => {
     try {
-      const result = await getCompatiblePingRecords(undefined, hours)
+      const result = await getMonitorPingRecords(undefined, hours)
 
       entry.data.value = {
         recordsByClient: buildRecordsByClient(result?.records ?? []),
@@ -249,7 +249,8 @@ function startSharedPingRecordsRefresh(entry: SharedPingRecordsEntry, hours: num
     return
 
   entry.refreshTimer = setInterval(() => {
-    void loadSharedPingRecords(entry, hours).catch(() => {})
+    if (!document.hidden)
+      void loadSharedPingRecords(entry, hours).catch(() => {})
   }, PING_RECORD_REFRESH_INTERVAL_MS)
 }
 

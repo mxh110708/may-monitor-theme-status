@@ -1,6 +1,13 @@
 import type { NodeData } from '@/stores/nodes'
 import { getDaysUntilExpired } from '@/utils/tagHelper'
 
+export function nodeStatusLabel(node: Pick<NodeData, 'dataState'>, lang = 'zh-CN'): string {
+  const labels = lang === 'zh-CN'
+    ? { waiting: '等待首次上报', online: '在线', offline: '离线', stale: '上报已过期', unknown: '状态未知' }
+    : { waiting: 'Awaiting first report', online: 'Online', offline: 'Offline', stale: 'Report stale', unknown: 'Status unknown' }
+  return labels[node.dataState]
+}
+
 export interface TopNodeMetric {
   node: NodeData
   value: number

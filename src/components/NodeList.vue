@@ -9,7 +9,7 @@ import { DataTooltip } from '@/components/ui/data-tooltip'
 import { ProgressThin } from '@/components/ui/progress-thin'
 import { useAppStore } from '@/stores/app'
 import { formatBytesPerSecondWithConfig, formatBytesWithConfig, formatDateTime, formatUptimeWithFormat, getStatus } from '@/utils/helper'
-import { getRealtimeTotalSpeed, getTrafficUsed, getTrafficUsedPercentage, hasTrafficLimit } from '@/utils/nodeMetricsHelper'
+import { getRealtimeTotalSpeed, getTrafficUsed, getTrafficUsedPercentage, hasTrafficLimit, nodeStatusLabel } from '@/utils/nodeMetricsHelper'
 import { getOSImage, getOSName } from '@/utils/osImageHelper'
 import { getRegionCode, getRegionDisplayName } from '@/utils/regionHelper'
 import { formatPriceWithCycle, getDaysUntilExpired, getExpireStatus, parseTags } from '@/utils/tagHelper'
@@ -242,6 +242,10 @@ function getCustomTags(node: NodeData): Array<string> {
                 </div>
               </div>
 
+              <div v-else-if="!node.time" class="text-xs text-muted-foreground">
+                —
+              </div>
+
               <!-- 标签 -->
               <div v-else-if="col.key === 'tags'">
                 <div class="flex flex-wrap gap-1 items-center">
@@ -379,7 +383,7 @@ function getCustomTags(node: NodeData): Array<string> {
             <div class="grid gap-2 items-center justify-center" :style="gridStyle">
               <div class="h-full space-y-1" :style="offlineOverlayContentStyle">
                 <div class="text-sm font-semibold truncate">
-                  <span class="text-red-500">离线</span> {{ node.name }}
+                  <span class="text-red-500">{{ nodeStatusLabel(node, appStore.lang) }}</span> {{ node.name }}
                 </div>
                 <div class="text-xs text-muted-foreground">
                   {{ formatOfflineTime(node) }}
