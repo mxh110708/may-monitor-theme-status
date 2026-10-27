@@ -20,6 +20,8 @@ bun run test:package
 
 `lint` 带 `--fix --cache`，会改文件，执行后审查差异。`build` 包含类型检查、Vite 构建和包检查。生成 `dist/` 及 `may-monitor-theme-status-build-<commit>.zip`。
 
+仅修改 Markdown 也要运行与 CI 一致的只读检查 `bun x --no-install eslint .`，其中包含文档格式校验。链接与示例检查不能替代它；需要自动修正时，可对指定文档使用 ESLint 的 `--fix`，再检查差异。
+
 已有构建的本地静态预览使用 `package.json` 中的 `preview` 脚本：
 
 ```bash
