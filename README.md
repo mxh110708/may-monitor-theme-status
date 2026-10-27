@@ -1,104 +1,55 @@
 # May Status
 
-面向 May Monitor 的公开监控主题，由 [mxh110708](https://github.com/mxh110708) 维护。
+面向 May Monitor 的公开状态主题，用节点总览、历史图表和线路质量展示真实监测结果。支持毛玻璃外观、可配置卡片与列表、地图及背景；它不承担后台鉴权、Agent 采集或代理故障切换。
 
-May Status 延续毛玻璃界面，在此基础上完善中文文案、后台外观设置、历史数据兼容性与网络质量展示。重点是清晰呈现真实监控数据，而不是改变检测结果或掩盖线路问题。
+[English](README.en.md) · [发行版](https://github.com/mxh110708/may-monitor-theme-status/releases/latest) · [安装与外观](docs/USER-GUIDE.zh-CN.md) · [网络数据口径](docs/NETWORK-DATA.zh-CN.md) · [文档目录](docs/README.md)
 
-## 主要功能
+## 版本与配套
 
-- **中文界面**：普通标签、选项和说明使用规范中文；保留 HTTP、WebSocket、IPv4、IPv6 等技术名称。
-- **统一外观设置**：在 May Monitor 后台的「May Status 外观」入口配置主题模式、数据刷新、首页模块、节点卡片和背景。
-- **可配置总览**：选择总览指标、排列顺序和快捷筛选项，支持卡片与列表视图及自定义节点顺序。
-- **真实网络历史**：按运营商与 IP 协议展示延迟和探测失败比例；缺少记录时显示无数据，不补造样本。
-- **地理距离评级**：同地区、同检测目标使用同一公式，不因某台服务器长期绕路而放宽标准。
-- **历史数据兼容**：按 May Monitor RPC2 合同读取节点及分组历史；网络与鉴权失败明确呈现，不再回退旧版接口。
-- **图标与背景**：支持 May Monitor 本地上传的站点图标，以及可选的外部图标、图片或视频背景。
-- **节点详情**：查看负载、内存、流量和检测历史，支持「延迟／丢包」图表切换；保留 7 天检测图表选项，实际数据范围由主控保留策略决定。
-- **CPU 与负载分轴**：CPU 使用率固定按左轴 0–100% 展示，系统负载按右轴展示并以逻辑核心数作为刻度基线；颜色、图例和提示均注明对应轴，避免把负载误读为百分比。
-- **地球与地图**：支持立体地球、点阵地球和平面地图，可独立调整相关显示选项。
+当前文档基线为 **2.2.2-may.17**，对应 May Monitor **0.1.0** 的 RPC2、状态及 `ping.loss` 合同。主题、Server 和内置 Web 的版本独立；旧 Komari 的全部版本不在当前新增适配范围。
 
-## 网络评级如何计算
+May Status 只接管公开展示。管理、初始化和恢复继续由 [May Monitor Web](https://github.com/mxh110708/may-monitor-web) 提供。普通使用无需安装开发工具；维护者通过固定 ZIP、SHA-256 和主题锁启用代码，不开启通用主题市场或任意脚本扩展。
 
-延迟数值始终是检测结果，不做除以二、历史归一化或其他显示修正。
+## 功能
 
-默认采用「地理距离」模式：根据机房与检测目标的城市参考坐标计算大圆距离，并以光纤传播时间为参考，使用统一裕量划分等级。同城市路径的 CN2 GIA、163 等线路共用阈值，绕路或拥塞造成的高延迟仍会降低评价。
+- 卡片／列表、总览指标组合、快捷筛选与自定义节点顺序，区分等待、在线、离线、过期和未知状态。
+- 节点详情与主机历史，CPU 百分比与系统负载分轴，不把 load 当作百分比。
+- 按任务、运营商和地址族展示实际延迟与探测失败比例；缺测留空，100% 失败照实显示。
+- 可选地理距离评级，未知或冲突位置保持中性，不用服务器历史为绕路放宽标准。
+- 后台「May Status 外观」配置主题模式、刷新、首页模块、地图、卡片、图标和背景。
+- 默认 HTTP 读取，可显式选择 WebSocket；页面隐藏暂停实时读取，恢复可见后读取当前状态。
+- 原始梅花照片裁剪的默认图标，支持本地上传或明确配置外部图标。
 
-以广东（广州参考点）↔ 洛杉矶为例：优秀上限 170 ms，良好上限 195 ms，一般上限 240 ms，较差上限 295 ms；超过 295 ms 或检测失败显示为「差」。
+## 使用流程
 
-这些阈值是主题的显示策略，不是行业标准，也不代表实际海缆长度。未知或有冲突的地理位置不会被猜测为某国中心点：成功样本保持中性显示，并提示补充坐标。后台也可选择旧版「固定阈值」模式。
+1. 先确保 May Monitor Server、真实 Agent 和需要展示的探测任务已正常运行。
+2. 由维护者核对本主题固定发行附件与 SHA-256，使用本仓库的暂存脚本生成不可覆盖的锁修订。
+3. 在配套 Deploy 中选择已核对的 Server，应用受审静态主题锁；先做一致性备份，再切换和验证。
+4. 在后台配置「May Status 外观」，检查公开字段、首页、节点详情、历史、未知状态和管理入口。
 
-「丢包」栏反映监控任务的探测失败比例，不能直接等同于所有实际业务流量的丢包率。地理距离评级不改变该比例。
+完整参数、暂存脚本来源、更新、恢复及故障处理见[使用教程](docs/USER-GUIDE.zh-CN.md)。保存外观不是安装新主题代码，主题更新也不授予修改 Cloudflare、Tunnel、代理或 SSH 的权限。
 
-详情页丢包曲线与汇总优先读取官方 `ping.loss` 分时指标，按每个时间桶的探测次数加权计算；不用降采样后的单个延迟值推算整桶丢包。边缘包含该时间桶的已有记录，主控只保留较粗历史时按对应粒度展示。缺测保持空白，100% 失败正常显示，丢包模式不应用延迟插值或峰值平滑。旧版主控不支持该指标时，明确标注为返回样本的估算值，可能遗漏短时失败。
+## 如何读网络图表
 
-数据来源、兼容边界与验证见 [丢包图表修复记录](docs/PING-LOSS-2026-10-16.zh-CN.md)。
+延迟保留原始测量，不除以二、不按历史归一化。地理评级依据机房与任务目标的城市参考点和统一公式，是主题显示策略，不是行业 SLA，也不是 Route 的分区切换阈值。
 
-算法、坐标覆盖范围及高级配置见 [实现说明](./May-CUSTOM.md#geographical-latency-ratings-222-mxh8)。
+丢包视图使用 `ping.loss` 时间桶的失败比例，按探测次数加权。它代表探测失败率，不等于所有业务包的丢包率。**缺少该指标或接口不兼容时显示不可用，不回退估算，不从降采样延迟推算。** 图表选择七天仍受 Server 的实际保留粒度与范围限制。详见[网络数据口径](docs/NETWORK-DATA.zh-CN.md)。
 
-## 安装与更新
+## 开发
 
-本轮采用已审查静态主题接入，配套功能首次加入 Server `0.1.0-rc.6` 候选。发布状态、暂存、应用、外观设置及恢复步骤见 [May Monitor 适配说明](docs/MAY-MONITOR-2026-10-26.zh-CN.md)。不会为了主题开启通用插件、脚本或 Web 归档导入。
-
-从 [Releases](https://github.com/mxh110708/may-monitor-theme-status/releases) 取得对应发行包和摘要，先核对版本与配套服务端；未公开的候选包不应通过不存在的下载地址获取。主题包名为 `may-monitor-theme-status-build-*.zip`。
-
-主题清单文件格式及 `GlassmorphismEnhanced` 设置身份保持稳定；账号与上游版权保留。源码目录为 `F:\Pywork\May-Monitor-Theme-Status`。
-
-## 使用注意
-
-- 自动外观模式按北京时间切换：07:00–18:59 使用浅色，其余时段使用深色，不是跟随操作系统外观。
-- 默认使用 HTTP 获取数据。选择 WebSocket 前，应确认反向代理支持连接升级。
-- 图标地址留空时使用主控已上传的站点图标；指定外部地址后优先使用该地址。
-- 网络质量展示需要在主控创建检测任务。地理位置自动识别支持洛杉矶、圣何塞、法兰克福、广东／广州等明确名称，也可在后台配置坐标匹配规则。
-- 地球位置展示与延迟等级判定是不同功能；延迟等级不使用访客出口位置或节点 IP 在线定位结果。
-- 主题不会修改服务器路由、代理出口、系统代理或监控任务，也不能保证零丢包。
-
-## 兼容性
-
-当前适配以 May Monitor 的节点、实时上报、负载历史、探测和分时丢包合同为准，后台管理继续使用 May 内置界面。主题与服务端版本独立，旧 Komari 发行不在本轮新增支持范围。
-
-等待首次上报、离线、过期、数据未知和监控不可达分别展示；不制造零负载或正常在线。页面隐藏后暂停实时轮询，重新显示时获取当前状态。
-
-## 本地开发
-
-使用 Bun，项目固定工具版本为 `1.3.14`；Node.js 要求 `^20.19.0` 或 `>=22.12.0`。
+固定使用 Bun **1.3.14**；当前 Node 范围为 `^20.19.0 || >=22.12.0`。从仓库根目录执行：
 
 ```bash
 bun install --frozen-lockfile
 bun run dev
 ```
 
-提交前检查并构建：
+构建和打包检查见[开发与验证](docs/DEVELOPMENT.zh-CN.md)。`bun run lint` 会自动修复并写缓存，需审查差异；不要把它当作只读文档检查。构建生成 `dist/` 与 `may-monitor-theme-status-build-<commit>.zip`，必须保留清单、预览和两个网络模式 PWA 覆盖资源。
 
-```bash
-bun run lint
-bun run build
-bun run check:package
-bun run test:package
-```
+技术栈为 Vue 3、Vite、Pinia、reka-ui、Tailwind CSS v4、ECharts 及地图组件。构建检查不证明所有浏览器、真实数据和生产恢复都已验收。
 
-构建输出为 `dist/` 和 `may-monitor-theme-status-build-<commit>.zip`。生产预览可使用 `bun run preview`。
+## 来源、许可与反馈
 
-构建必须包含 `public/registerSW.js` 与 `public/sw.js` 的原始字节：它们停止旧 PWA 导航兜底把 `/admin` 错误导向公开主题，Worker 不拦截网络请求。更新既有浏览器 Worker 取决于浏览器更新周期；本项目不强制刷新或清理用户缓存。`check:package` 检查版本、主题身份、必需资源和网络模式行为，不代表完整浏览器验收。
+May Status 是独立维护的衍生主题，感谢 [Komari](https://github.com/komari-monitor/komari)、[Glassmorphism Enhanced](https://github.com/jianmomo/komari-theme-Glassmorphism-Enhanced)、[Glassmorphism](https://github.com/sanrokamlan-prog/komari-theme-Glassmorphism)、Komari Emerald 及 [Komari Naive](https://github.com/tonyliuzj/komari-naive) 的设计与实现。保留 [MIT 许可证](LICENSE) 和上游版权声明。
 
-`build-ci.yml` 对推送／PR 在 Windows 与 Linux 校验固定锁文件、lint 和构建；`release-on-version-bump.yml` 只在 `main` 版本改变时发行。维护修订不冒充新发行，不覆盖已有附件；发布新包需要新的版本号。
-
-本轮依赖、PWA 纳管与正式附件差异说明见 [维护验证记录](docs/MAINTENANCE-2026-10-02.zh-CN.md)。
-
-技术栈：Vue 3、Vite、Pinia、reka-ui、Tailwind CSS v4、ECharts，以及 globe.gl／Three.js／COBE 地图组件。
-
-## 反馈与安全
-
-通过本仓库的 [Issues](https://github.com/mxh110708/may-monitor-theme-status/issues) 提交问题。请说明主控与主题版本、浏览器、复现步骤，以及经过脱敏的截图。
-
-不要提交节点 Token、管理员密码、私钥、数据库、备份、Cloudflare Tunnel Token 或完整私有配置。公开示例不应包含真实节点地址或标识。
-
-## 上游来源与许可
-
-May Status 是独立维护的衍生主题，不是 Komari 官方主题。感谢原项目的设计与实现：
-
-- [Komari Monitor](https://github.com/komari-monitor/komari)
-- [Glassmorphism Enhanced · jianmomo](https://github.com/jianmomo/komari-theme-Glassmorphism-Enhanced)
-- [Glassmorphism · sanrokamlan](https://github.com/sanrokamlan-prog/komari-theme-Glassmorphism)
-- Komari Emerald 原始主题，以及 [Komari Naive · Tony Liu](https://github.com/tonyliuzj/komari-naive)
-
-本项目采用 [MIT 许可证](./LICENSE)，保留上游版权声明，并记录 May Status 的修改版权。
+`komari-theme.json` 是格式名，`GlassmorphismEnhanced` 是已保存设置的技术身份，不能为改名盲目替换。反馈附 Server／主题版本、浏览器、发生时间及脱敏截图；不提交数据库、Token、完整私有配置或备份。

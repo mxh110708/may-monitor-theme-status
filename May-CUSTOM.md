@@ -1,5 +1,8 @@
 # May Status implementation notes
 
+> 文档定位：实现与历史修订记录，不是当前安装顺序。主题 2.2.2-may.17 的安装、数据合同和不再提供的旧回退以[使用教程](docs/USER-GUIDE.zh-CN.md)及[网络口径](docs/NETWORK-DATA.zh-CN.md)为准。
+
+
 This public repository maintains May Status, a Komari theme derived from
 `jianmomo/komari-theme-Glassmorphism-Enhanced`.
 
