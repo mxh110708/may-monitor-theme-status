@@ -4,10 +4,10 @@ import type { Client, NodeStatus, PingLossMetricsResponse, PingRecord, StatusRec
 import { getPingLossWindowMs } from '@/utils/pingChartHelper'
 import { getSharedRpc } from '@/utils/rpc'
 
-export interface CompatiblePingTask extends PingTask { type?: string, default_on?: boolean }
-export interface CompatiblePingRecordsResponse { records: PingRecord[], tasks: CompatiblePingTask[] }
-export interface CompatibleLoadRecordsResponse { records: StatusRecord[] }
-export interface CompatibleNodesSnapshot { clients: Record<string, Client>, statuses: Record<string, NodeStatus> }
+export interface MonitorPingTask extends PingTask { type?: string, default_on?: boolean }
+export interface MonitorPingRecordsResponse { records: PingRecord[], tasks: MonitorPingTask[] }
+export interface MonitorLoadRecordsResponse { records: StatusRecord[] }
+export interface MonitorNodesSnapshot { clients: Record<string, Client>, statuses: Record<string, NodeStatus> }
 
 export async function checkMonitorHealth(timeout = 5000): Promise<void> {
   const controller = new AbortController()
@@ -20,7 +20,7 @@ export async function checkMonitorHealth(timeout = 5000): Promise<void> {
   finally { clearTimeout(timer) }
 }
 
-export async function getMonitorNodesSnapshot(): Promise<CompatibleNodesSnapshot> {
+export async function getMonitorNodesSnapshot(): Promise<MonitorNodesSnapshot> {
   const rpc = getSharedRpc()
   const [clients, statuses] = await Promise.all([rpc.getNodes(), rpc.getNodesLatestStatus()])
   if (!clients || !statuses || typeof clients !== 'object' || typeof statuses !== 'object')
@@ -36,13 +36,13 @@ export function normalizeRpcLoadRecords(records: unknown, uuid: string): StatusR
     && typeof record.time === 'string' && Number.isFinite(new Date(record.time).getTime()) && Number.isFinite(record.cpu)))
 }
 
-export async function getMonitorLoadRecords(uuid: string, hours: number): Promise<CompatibleLoadRecordsResponse> {
+export async function getMonitorLoadRecords(uuid: string, hours: number): Promise<MonitorLoadRecordsResponse> {
   const result = await getSharedRpc().getLoadRecords(uuid, hours)
   return { records: normalizeRpcLoadRecords(result?.records, uuid) }
 }
 
-export async function getMonitorPingRecords(uuid: string | undefined, hours: number): Promise<CompatiblePingRecordsResponse> {
-  const result = await getSharedRpc().getClient().call<CompatiblePingRecordsResponse>('common:getRecords', { type: 'ping', uuid, hours })
+export async function getMonitorPingRecords(uuid: string | undefined, hours: number): Promise<MonitorPingRecordsResponse> {
+  const result = await getSharedRpc().getClient().call<MonitorPingRecordsResponse>('common:getRecords', { type: 'ping', uuid, hours })
   if (!Array.isArray(result?.records) || !Array.isArray(result?.tasks))
     throw new TypeError('Invalid May Monitor probe history')
   return result

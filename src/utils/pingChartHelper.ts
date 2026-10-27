@@ -1,5 +1,4 @@
-import type { PingLossMetricSeries, PingRecord } from '@/utils/rpc'
-import { isValidLatencySample } from '@/utils/latencyRating'
+import type { PingLossMetricSeries } from '@/utils/rpc'
 
 export interface PingLossSample {
   failed: number
@@ -36,7 +35,7 @@ export function getPingMetricLossWindowMs(series: PingLossMetricSeries[], hours:
   }, base)
 }
 
-function createPingLossWindows(hours: number, until: number, step: number, clipStart: boolean): PingLossWindow[] {
+function createPingLossWindows(hours: number, until: number, step: number): PingLossWindow[] {
   if (!Number.isFinite(hours) || hours <= 0 || !Number.isFinite(until))
     return []
   const from = until - hours * 3_600_000
@@ -45,7 +44,7 @@ function createPingLossWindows(hours: number, until: number, step: number, clipS
   const windows: PingLossWindow[] = []
   for (let time = first; time <= last; time += step) {
     windows.push({
-      time: new Date(clipStart ? Math.max(time, from) : time).toISOString(),
+      time: new Date(time).toISOString(),
       end: new Date(Math.min(time + step, until)).toISOString(),
       tasks: new Map(),
     })
@@ -61,30 +60,10 @@ function addPingLossSample(window: PingLossWindow, taskId: number, failed: numbe
   window.tasks.set(taskId, sample)
 }
 
-/** Legacy fallback is a ratio of returned samples; it cannot reconstruct probes discarded by sampling. */
-export function buildPingLossWindows(records: PingRecord[], hours: number, until: number): PingLossWindow[] {
-  const step = getPingLossWindowMs(hours)
-  const windows = createPingLossWindows(hours, until, step, true)
-  const from = until - hours * 3_600_000
-  const first = Math.floor(from / step) * step
-  for (const record of records) {
-    if (!isValidLatencySample(record))
-      continue
-    const time = Date.parse(record.time)
-    if (time < from || time >= until)
-      continue
-    const window = windows[Math.floor((time - first) / step)]
-    if (!window)
-      continue
-    addPingLossSample(window, record.task_id, record.value < 0 ? 1 : 0, 1)
-  }
-  return windows
-}
-
 /** Use the loss ratio and its count, never the last latency of a historical bucket. Null stays missing. */
 export function buildPingMetricLossWindows(series: PingLossMetricSeries[], hours: number, until: number): PingLossWindow[] {
   const step = getPingMetricLossWindowMs(series, hours)
-  const windows = createPingLossWindows(hours, until, step, false)
+  const windows = createPingLossWindows(hours, until, step)
   const first = Math.floor((until - hours * 3_600_000) / step) * step
   for (const item of series) {
     for (const point of item.points) {

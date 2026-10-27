@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useAppStore } from '@/stores/app'
 import { isValidLatencySample } from '@/utils/latencyRating'
 import { getMonitorPingLossMetrics, getMonitorPingRecords } from '@/utils/monitorData'
-import { buildPingLossWindows, buildPingMetricLossWindows, getPingLossWindowMs, getPingMetricLossWindowMs } from '@/utils/pingChartHelper'
+import { buildPingMetricLossWindows, getPingLossWindowMs, getPingMetricLossWindowMs } from '@/utils/pingChartHelper'
 import { cutPeakValues, interpolateNullsLinear } from '@/utils/recordHelper'
 import '@/utils/echarts' // 共享 ECharts 配置
 
@@ -315,7 +315,7 @@ const chartData = computed(() => {
 
 const lossWindows = computed(() => lossMetrics.value
   ? buildPingMetricLossWindows(lossMetrics.value.series, selectedHours.value, recordsUntil.value)
-  : buildPingLossWindows(remoteData.value, selectedHours.value, recordsUntil.value))
+  : [])
 const lossWindowMinutes = computed(() => (lossMetrics.value
   ? getPingMetricLossWindowMs(lossMetrics.value.series, selectedHours.value)
   : getPingLossWindowMs(selectedHours.value)) / 60_000)
@@ -516,7 +516,7 @@ const pingChartOption = computed(() => {
             const colorDot = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};margin-right:8px;flex-shrink:0"></span>`
             const name = item.seriesName.replace(TOOLTIP_ESCAPE_PATTERN, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;' })[char]!)
             const sample = task ? window?.tasks.get(task.id) : undefined
-            const value = isLoss ? `${item.value.toFixed(2)}%${sample ? `（${Math.round(sample.failed)}/${sample.total} ${lossMetrics.value ? '次失败' : '失败样本'}）` : ''}` : `${Math.round(item.value)} ms`
+            const value = isLoss ? `${item.value.toFixed(2)}%${sample ? `（${Math.round(sample.failed)}/${sample.total} 次失败）` : ''}` : `${Math.round(item.value)} ms`
             html += `<div style="display:flex;align-items:center">${colorDot}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span><span style="margin-left:auto;font-weight:600;margin-left:16px;font-variant-numeric:tabular-nums">${value}</span></div>`
           }
         }
@@ -730,7 +730,7 @@ onBeforeUnmount(() => {
                   {{ task.latestValue !== null && task.avg !== undefined ? `${Math.round(task.avg)}ms` : '—' }}
                 </span>
                 <span class="opacity-60">·</span>
-                <span :title="lossMetrics ? '探测失败比例' : '返回样本的失败比例（估算）'">{{ task.loss !== null ? `${task.loss.toFixed(2)}%` : '—' }}</span>
+                <span title="探测失败比例">{{ task.loss !== null ? `${task.loss.toFixed(2)}%` : '—' }}</span>
                 <template v-if="task.hasData && task.p99_p50_ratio !== undefined">
                   <span class="opacity-60">·</span>
                   <span title="波动率">{{ task.p99_p50_ratio.toFixed(2) }}</span>
@@ -782,7 +782,7 @@ onBeforeUnmount(() => {
             每 {{ lossWindowMinutes }} 分钟按探测次数加权统计，边缘包含该时间桶的已有记录。
           </template>
           <template v-else>
-            旧版接口：每 {{ lossWindowMinutes }} 分钟按返回样本估算，降采样可能遗漏短时失败。
+            探测失败统计暂不可用，请稍后重试。
           </template>
           空缺不计作成功，不插值或平滑。此指标反映监控探测失败，不等同于全部业务流量的丢包率。
         </p>
